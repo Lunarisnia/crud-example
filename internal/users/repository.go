@@ -12,6 +12,7 @@ type UserRepository interface {
 	ReadById(ctx context.Context, id int) (*User, error)
 	ReadAll(ctx context.Context) ([]*User, error)
 	UpdateName(ctx context.Context, id int, newName string) error
+	Remove(ctx context.Context, id int) error
 }
 
 type userRepositoryImpl struct {
@@ -68,7 +69,7 @@ func (u userRepositoryImpl) ReadById(ctx context.Context, id int) (*User, error)
 
 func (u userRepositoryImpl) ReadAll(ctx context.Context) ([]*User, error) {
 	statement, err := u.db.PrepareContext(ctx,
-		"SELECT * from public.user")
+		"SELECT * from public.user ORDER BY id asc")
 	if err != nil {
 		return nil, err
 	}
@@ -98,6 +99,19 @@ func (u userRepositoryImpl) UpdateName(ctx context.Context, id int, newName stri
 	}
 	defer statement.Close()
 	_, err = statement.ExecContext(ctx, newName, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u userRepositoryImpl) Remove(ctx context.Context, id int) error {
+	statement, err := u.db.PrepareContext(ctx, "DELETE FROM public.user WHERE id = $1")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+	_, err = statement.ExecContext(ctx, id)
 	if err != nil {
 		return err
 	}
