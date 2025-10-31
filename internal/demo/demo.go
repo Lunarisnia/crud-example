@@ -24,9 +24,10 @@ func Run() {
 	defer db.Close()
 
 	userRepo := users.NewUserRepository(db)
-	createUserDemo(ctx, db, userRepo)
 
-	// With wrapper
+	// NOTE: Create User
+	createUserDemo(ctx, db, userRepo)
+	// NOTE: Create User With Transaction wrapper
 	database.UseTransaction(ctx, db, func(tx *sql.Tx) error {
 		err = userRepo.Create(ctx, tx, "This")
 		if err != nil {
@@ -39,24 +40,13 @@ func Run() {
 		return nil
 	})
 
-	user, err := userRepo.ReadById(ctx, 1)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	fmt.Println("===========ReadByID==========")
-	fmt.Println("ID:", user.ID)
-	fmt.Println("Name:", user.Name)
-	fmt.Println("===========ReadByID==========")
+	// NOTE: Read user by ID
+	showFirstUser(ctx, db, userRepo)
 
-	users, err := userRepo.ReadAll(ctx)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	for _, u := range users {
-		fmt.Println("=====================")
-		fmt.Println("ID:", u.ID)
-		fmt.Println("Name:", u.Name)
-	}
+	// NOTE: Read all User
+	showAllUser(ctx, db, userRepo)
+
+	showFirstUser(ctx, db, userRepo)
 }
 
 func createUserDemo(ctx context.Context, db *sql.DB, userRepo users.UserRepository) {
@@ -77,4 +67,27 @@ func createUserDemo(ctx context.Context, db *sql.DB, userRepo users.UserReposito
 		log.Fatalln()
 	}
 	tx.Commit()
+}
+
+func showFirstUser(ctx context.Context, db *sql.DB, userRepo users.UserRepository) {
+	user, err := userRepo.ReadById(ctx, 1)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println("===========ReadByID==========")
+	fmt.Println("ID:", user.ID)
+	fmt.Println("Name:", user.Name)
+	fmt.Println("===========ReadByID==========")
+}
+
+func showAllUser(ctx context.Context, db *sql.DB, userRepo users.UserRepository) {
+	users, err := userRepo.ReadAll(ctx)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	for _, u := range users {
+		fmt.Println("=====================")
+		fmt.Println("ID:", u.ID)
+		fmt.Println("Name:", u.Name)
+	}
 }

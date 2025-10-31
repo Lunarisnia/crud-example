@@ -11,6 +11,7 @@ type UserRepository interface {
 	Create(ctx context.Context, tx database.DB, name string) error
 	ReadById(ctx context.Context, id int) (*User, error)
 	ReadAll(ctx context.Context) ([]*User, error)
+	UpdateName(ctx context.Context, id int, newName string) error
 }
 
 type userRepositoryImpl struct {
@@ -88,4 +89,17 @@ func (u userRepositoryImpl) ReadAll(ctx context.Context) ([]*User, error) {
 	}
 
 	return users, nil
+}
+
+func (u userRepositoryImpl) UpdateName(ctx context.Context, id int, newName string) error {
+	statement, err := u.db.PrepareContext(ctx, "UPDATE public.user SET name = $1 WHERE id = $2")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+	_, err = statement.ExecContext(ctx, newName, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
