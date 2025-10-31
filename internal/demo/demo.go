@@ -43,8 +43,20 @@ func Run() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	fmt.Println("===========ReadByID==========")
 	fmt.Println("ID:", user.ID)
 	fmt.Println("Name:", user.Name)
+	fmt.Println("===========ReadByID==========")
+
+	users, err := userRepo.ReadAll(ctx)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	for _, u := range users {
+		fmt.Println("=====================")
+		fmt.Println("ID:", u.ID)
+		fmt.Println("Name:", u.Name)
+	}
 }
 
 func createUserDemo(ctx context.Context, db *sql.DB, userRepo users.UserRepository) {

@@ -10,6 +10,7 @@ import (
 type UserRepository interface {
 	Create(ctx context.Context, tx database.DB, name string) error
 	ReadById(ctx context.Context, id int) (*User, error)
+	ReadAll(ctx context.Context) ([]*User, error)
 }
 
 type userRepositoryImpl struct {
@@ -62,4 +63,29 @@ func (u userRepositoryImpl) ReadById(ctx context.Context, id int) (*User, error)
 	}
 
 	return &user, nil
+}
+
+func (u userRepositoryImpl) ReadAll(ctx context.Context) ([]*User, error) {
+	statement, err := u.db.PrepareContext(ctx,
+		"SELECT * from public.user")
+	if err != nil {
+		return nil, err
+	}
+	defer statement.Close()
+	rows, err := statement.QueryContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	users := make([]*User, 0)
+	for rows.Next() {
+		user := User{}
+		if err := rows.Scan(&user.ID, &user.Name); err != nil {
+			return nil, err
+		}
+		users = append(users, &user)
+	}
+
+	return users, nil
 }
