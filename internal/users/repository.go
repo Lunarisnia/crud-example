@@ -11,8 +11,8 @@ type UserRepository interface {
 	Create(ctx context.Context, tx database.DB, name string) error
 	ReadById(ctx context.Context, id int) (*User, error)
 	ReadAll(ctx context.Context) ([]*User, error)
-	UpdateName(ctx context.Context, id int, newName string) error
-	Remove(ctx context.Context, id int) error
+	UpdateName(ctx context.Context, tx database.DB, id int, newName string) error
+	Remove(ctx context.Context, tx database.DB, id int) error
 }
 
 type userRepositoryImpl struct {
@@ -92,7 +92,11 @@ func (u userRepositoryImpl) ReadAll(ctx context.Context) ([]*User, error) {
 	return users, nil
 }
 
-func (u userRepositoryImpl) UpdateName(ctx context.Context, id int, newName string) error {
+func (u userRepositoryImpl) UpdateName(ctx context.Context, tx database.DB, id int, newName string) error {
+	if tx != nil {
+		u.db = tx
+	}
+
 	statement, err := u.db.PrepareContext(ctx, "UPDATE public.user SET name = $1 WHERE id = $2")
 	if err != nil {
 		return err
@@ -105,7 +109,11 @@ func (u userRepositoryImpl) UpdateName(ctx context.Context, id int, newName stri
 	return nil
 }
 
-func (u userRepositoryImpl) Remove(ctx context.Context, id int) error {
+func (u userRepositoryImpl) Remove(ctx context.Context, tx database.DB, id int) error {
+	if tx != nil {
+		u.db = tx
+	}
+
 	statement, err := u.db.PrepareContext(ctx, "DELETE FROM public.user WHERE id = $1")
 	if err != nil {
 		return err

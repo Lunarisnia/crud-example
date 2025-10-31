@@ -98,7 +98,7 @@ func showAllUser(ctx context.Context, userRepo users.UserRepository) {
 }
 
 func changeFirstUserName(ctx context.Context, userRepo users.UserRepository) {
-	err := userRepo.UpdateName(ctx, 1, "Training")
+	err := userRepo.UpdateName(ctx, nil, 1, "Training")
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -111,7 +111,7 @@ func removeLastUser(ctx context.Context, userRepo users.UserRepository) {
 	}
 	fmt.Println("Total User (Before Deletion):", len(users))
 
-	err = userRepo.Remove(ctx, users[len(users)-1].ID)
+	err = userRepo.Remove(ctx, nil, users[len(users)-1].ID)
 	if err != nil {
 		log.Fatalln(err)
 	}
