@@ -3,6 +3,7 @@ package demo
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 
@@ -37,6 +38,13 @@ func Run() {
 		}
 		return nil
 	})
+
+	user, err := userRepo.ReadById(ctx, 1)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println("ID:", user.ID)
+	fmt.Println("Name:", user.Name)
 }
 
 func createUserDemo(ctx context.Context, db *sql.DB, userRepo users.UserRepository) {

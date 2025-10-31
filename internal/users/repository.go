@@ -9,6 +9,7 @@ import (
 
 type UserRepository interface {
 	Create(ctx context.Context, tx database.DB, name string) error
+	ReadById(ctx context.Context, id int) (*User, error)
 }
 
 type userRepositoryImpl struct {
@@ -38,4 +39,27 @@ func (u userRepositoryImpl) Create(ctx context.Context, tx database.DB, name str
 	}
 
 	return nil
+}
+
+func (u userRepositoryImpl) ReadById(ctx context.Context, id int) (*User, error) {
+	statement, err := u.db.PrepareContext(ctx,
+		"SELECT * from public.user where id = $1 limit 1")
+	if err != nil {
+		return nil, err
+	}
+	defer statement.Close()
+	rows, err := statement.QueryContext(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	user := User{}
+	for rows.Next() {
+		if err := rows.Scan(&user.ID, &user.Name); err != nil {
+			return nil, err
+		}
+	}
+
+	return &user, nil
 }
