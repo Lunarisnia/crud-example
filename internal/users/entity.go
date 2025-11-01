@@ -1,6 +1,10 @@
 package users
 
 type User struct {
-	ID   int
+	ID   uint `gorm:"primaryKey"`
 	Name string
+}
+
+func (u User) TableName() string {
+	return "public.user"
 }

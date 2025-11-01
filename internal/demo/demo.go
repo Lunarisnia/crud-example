@@ -2,13 +2,13 @@ package demo
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/lunarisnia/crud-example/internal/database"
 	"github.com/lunarisnia/crud-example/internal/users"
+	"gorm.io/gorm"
 )
 
 func Run() {
@@ -21,24 +21,23 @@ func Run() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	defer db.Close()
 
 	userRepo := users.NewUserRepository(db)
 
 	// NOTE: Create User
 	createUserDemo(ctx, db, userRepo)
 	// NOTE: Create User With Transaction wrapper
-	// database.UseTransaction(ctx, db, func(tx *sql.Tx) error {
-	// 	err = userRepo.Create(ctx, tx, "This")
-	// 	if err != nil {
-	// 		log.Fatalln(err)
-	// 	}
-	// 	err = userRepo.Create(ctx, tx, "Automatically, Rollback and Commit")
-	// 	if err != nil {
-	// 		log.Fatalln()
-	// 	}
-	// 	return nil
-	// })
+	database.UseTransaction(ctx, db, func(tx *gorm.DB) error {
+		err = userRepo.Create(ctx, tx, "This")
+		if err != nil {
+			log.Fatalln(err)
+		}
+		err = userRepo.Create(ctx, tx, "Automatically, Rollback and Commit")
+		if err != nil {
+			log.Fatalln()
+		}
+		return nil
+	})
 
 	// NOTE: Read user by ID
 	// showFirstUser(ctx, userRepo)
@@ -54,22 +53,13 @@ func Run() {
 	// removeLastUser(ctx, userRepo)
 }
 
-func createUserDemo(ctx context.Context, db *sql.DB, userRepo users.UserRepository) {
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		log.Fatalln(err)
-	}
+func createUserDemo(ctx context.Context, db *gorm.DB, userRepo users.UserRepository) {
+	tx := db.Begin()
 
-	err = userRepo.Create(ctx, tx, "Foobar")
+	err := userRepo.Create(ctx, tx, "Foobar")
 	if err != nil {
 		tx.Rollback()
 		log.Fatalln(err)
-	}
-
-	err = userRepo.Create(ctx, tx, "Hello, World")
-	if err != nil {
-		tx.Rollback()
-		log.Fatalln()
 	}
 	tx.Commit()
 }

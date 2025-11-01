@@ -2,30 +2,24 @@ package database
 
 import (
 	"context"
-	"database/sql"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-type DB interface {
-	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
-}
-
-func Connect(databaseUrl string) (*sql.DB, error) {
-	db, err := sql.Open("pgx", databaseUrl)
+func Connect(databaseUrl string) (*gorm.DB, error) {
+	// dsn := "host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
+	db, err := gorm.Open(postgres.Open(databaseUrl), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
 	return db, nil
 }
 
-func UseTransaction(ctx context.Context, db *sql.DB, action func(tx *sql.Tx) error) error {
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
+func UseTransaction(ctx context.Context, db *gorm.DB, action func(tx *gorm.DB) error) error {
+	tx := db.Begin()
 
-	err = action(tx)
+	err := action(tx)
 	if err != nil {
 		tx.Rollback()
 		return err
