@@ -9,7 +9,7 @@ import (
 
 type UserRepository interface {
 	Create(ctx context.Context, tx *gorm.DB, name string) error
-	ReadById(ctx context.Context, id int) (userentities.User, error)
+	ReadById(ctx context.Context, id uint) (userentities.User, error)
 	ReadAll(ctx context.Context) ([]userentities.User, error)
 	UpdateName(ctx context.Context, tx *gorm.DB, id uint, newName string) error
 	Remove(ctx context.Context, tx *gorm.DB, id uint) error
@@ -40,7 +40,7 @@ func (u userRepositoryImpl) Create(ctx context.Context, tx *gorm.DB, name string
 	return nil
 }
 
-func (u userRepositoryImpl) ReadById(ctx context.Context, id int) (userentities.User, error) {
+func (u userRepositoryImpl) ReadById(ctx context.Context, id uint) (userentities.User, error) {
 	user, err := gorm.G[userentities.User](u.db).First(ctx)
 	if err != nil {
 		return user, err
@@ -50,7 +50,7 @@ func (u userRepositoryImpl) ReadById(ctx context.Context, id int) (userentities.
 }
 
 func (u userRepositoryImpl) ReadAll(ctx context.Context) ([]userentities.User, error) {
-	users, err := gorm.G[userentities.User](u.db).Find(ctx)
+	users, err := gorm.G[userentities.User](u.db).Order("id asc").Find(ctx)
 	if err != nil {
 		return nil, err
 	}

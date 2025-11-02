@@ -72,7 +72,7 @@ func (mr *MockUserRepositoryMockRecorder) ReadAll(ctx any) *gomock.Call {
 }
 
 // ReadById mocks base method.
-func (m *MockUserRepository) ReadById(ctx context.Context, id int) (userentities.User, error) {
+func (m *MockUserRepository) ReadById(ctx context.Context, id uint) (userentities.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReadById", ctx, id)
 	ret0, _ := ret[0].(userentities.User)
