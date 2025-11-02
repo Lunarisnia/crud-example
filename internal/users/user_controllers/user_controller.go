@@ -1,16 +1,17 @@
-package users
+package usercontrollers
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	userservices "github.com/lunarisnia/crud-example/internal/users/user_services"
 )
 
 type userControllerImpl struct {
-	userService UserService
+	userService userservices.UserService
 }
 
-func SetupUserController(r *gin.RouterGroup, userService UserService) {
+func SetupUserController(r *gin.RouterGroup, userService userservices.UserService) {
 	c := userControllerImpl{
 		userService: userService,
 	}

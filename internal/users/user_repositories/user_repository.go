@@ -1,15 +1,16 @@
-package users
+package userrepositories
 
 import (
 	"context"
 
+	userentities "github.com/lunarisnia/crud-example/internal/users/user_entities"
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
 	Create(ctx context.Context, tx *gorm.DB, name string) error
-	ReadById(ctx context.Context, id int) (User, error)
-	ReadAll(ctx context.Context) ([]User, error)
+	ReadById(ctx context.Context, id int) (userentities.User, error)
+	ReadAll(ctx context.Context) ([]userentities.User, error)
 	UpdateName(ctx context.Context, tx *gorm.DB, id uint, newName string) error
 	Remove(ctx context.Context, tx *gorm.DB, id uint) error
 }
@@ -29,7 +30,7 @@ func (u userRepositoryImpl) Create(ctx context.Context, tx *gorm.DB, name string
 		u.db = tx
 	}
 
-	err := gorm.G[User](u.db).Create(ctx, &User{
+	err := gorm.G[userentities.User](u.db).Create(ctx, &userentities.User{
 		Name: name,
 	})
 	if err != nil {
@@ -39,8 +40,8 @@ func (u userRepositoryImpl) Create(ctx context.Context, tx *gorm.DB, name string
 	return nil
 }
 
-func (u userRepositoryImpl) ReadById(ctx context.Context, id int) (User, error) {
-	user, err := gorm.G[User](u.db).First(ctx)
+func (u userRepositoryImpl) ReadById(ctx context.Context, id int) (userentities.User, error) {
+	user, err := gorm.G[userentities.User](u.db).First(ctx)
 	if err != nil {
 		return user, err
 	}
@@ -48,8 +49,8 @@ func (u userRepositoryImpl) ReadById(ctx context.Context, id int) (User, error) 
 	return user, nil
 }
 
-func (u userRepositoryImpl) ReadAll(ctx context.Context) ([]User, error) {
-	users, err := gorm.G[User](u.db).Find(ctx)
+func (u userRepositoryImpl) ReadAll(ctx context.Context) ([]userentities.User, error) {
+	users, err := gorm.G[userentities.User](u.db).Find(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +63,7 @@ func (u userRepositoryImpl) UpdateName(ctx context.Context, tx *gorm.DB, id uint
 		u.db = tx
 	}
 
-	_, err := gorm.G[User](u.db).Where("id = ?", id).Update(ctx, "name", newName)
+	_, err := gorm.G[userentities.User](u.db).Where("id = ?", id).Update(ctx, "name", newName)
 	if err != nil {
 		return err
 	}
@@ -75,7 +76,7 @@ func (u userRepositoryImpl) Remove(ctx context.Context, tx *gorm.DB, id uint) er
 		u.db = tx
 	}
 
-	_, err := gorm.G[User](u.db).Where("id = ?", id).Delete(ctx)
+	_, err := gorm.G[userentities.User](u.db).Where("id = ?", id).Delete(ctx)
 	if err != nil {
 		return err
 	}

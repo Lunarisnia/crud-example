@@ -6,7 +6,9 @@ import (
 
 	"github.com/lunarisnia/crud-example/internal/database"
 	"github.com/lunarisnia/crud-example/internal/server"
-	"github.com/lunarisnia/crud-example/internal/users"
+	usercontrollers "github.com/lunarisnia/crud-example/internal/users/user_controllers"
+	userrepositories "github.com/lunarisnia/crud-example/internal/users/user_repositories"
+	userservices "github.com/lunarisnia/crud-example/internal/users/user_services"
 )
 
 func Run() {
@@ -19,11 +21,11 @@ func Run() {
 		log.Fatalln(err)
 	}
 
-	userRepo := users.NewUserRepository(db)
-	userService := users.NewUserService(userRepo)
+	userRepo := userrepositories.NewUserRepository(db)
+	userService := userservices.NewUserService(userRepo)
 
 	s := server.NewServer()
 	baseGroup := s.Group("/v1")
-	users.SetupUserController(baseGroup, userService)
+	usercontrollers.SetupUserController(baseGroup, userService)
 	s.Run("0.0.0.0:3210")
 }
