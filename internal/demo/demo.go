@@ -9,11 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	authcontrollers "github.com/lunarisnia/crud-example/internal/auth/auth_controllers"
 	authservices "github.com/lunarisnia/crud-example/internal/auth/auth_services"
 	"github.com/lunarisnia/crud-example/internal/database"
-	"github.com/lunarisnia/crud-example/internal/middlewares"
 	"github.com/lunarisnia/crud-example/internal/server"
 	usercontrollers "github.com/lunarisnia/crud-example/internal/users/user_controllers"
 	userrepositories "github.com/lunarisnia/crud-example/internal/users/user_repositories"
@@ -39,14 +37,12 @@ func Run() {
 	userService := userservices.NewUserService(userRepo)
 	authService := authservices.NewAuthService(userService)
 
-	router := server.NewRawServer()
+	router := server.NewRouter()
 	server := &http.Server{
 		Addr:    ":3210",
 		Handler: router.Handler(),
 	}
 
-	router.Use(gin.Recovery())
-	router.Use(middlewares.RequestLogger())
 	baseGroup := router.Group("/v1")
 	usercontrollers.SetupUserController(baseGroup, userService)
 	authcontrollers.SetupAuthController(baseGroup, authService)

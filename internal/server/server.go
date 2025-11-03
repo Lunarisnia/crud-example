@@ -2,10 +2,10 @@ package server
 
 import "github.com/gin-gonic/gin"
 
-func NewServer() *gin.Engine {
+func NewRouter() *gin.Engine {
 	return gin.Default()
 }
 
-func NewRawServer() *gin.Engine {
+func NewRawRouter() *gin.Engine {
 	return gin.New()
 }
