@@ -1,8 +1,13 @@
 package demo
 
 import (
+	"context"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	authcontrollers "github.com/lunarisnia/crud-example/internal/auth/auth_controllers"
@@ -24,19 +29,47 @@ func Run() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatalln(err)
+	}
 	authservices.FetchToken()
 
 	userRepo := userrepositories.NewUserRepository(db)
 	userService := userservices.NewUserService(userRepo)
 	authService := authservices.NewAuthService(userService)
 
-	s := server.NewRawServer()
+	router := server.NewRawServer()
+	server := &http.Server{
+		Addr:    ":3210",
+		Handler: router.Handler(),
+	}
 
-	s.Use(gin.Recovery())
-	s.Use(middlewares.RequestLogger())
-	baseGroup := s.Group("/v1")
+	router.Use(gin.Recovery())
+	router.Use(middlewares.RequestLogger())
+	baseGroup := router.Group("/v1")
 	usercontrollers.SetupUserController(baseGroup, userService)
 	authcontrollers.SetupAuthController(baseGroup, authService)
 
-	s.Run("0.0.0.0:3210")
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}()
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting Down Server ...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		log.Println("Server Shutdown:", err)
+	}
+	err = sqlDB.Close()
+	if err != nil {
+		log.Println("Database Shutdown:", err)
+	}
+	log.Println("Server exiting")
 }
