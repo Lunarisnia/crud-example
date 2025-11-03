@@ -30,8 +30,8 @@ func VerifyAuth() gin.HandlerFunc {
 			})
 			return
 		}
-		claim := &auth.JWTClaim{}
-		token, err := jwt.ParseWithClaims(bearerToken, claim, func(t *jwt.Token) (any, error) {
+		claim := auth.JWTClaim{}
+		token, err := jwt.ParseWithClaims(bearerToken, &claim, func(t *jwt.Token) (any, error) {
 			// NOTE: https://www.vaadata.com/blog/jwt-json-web-token-vulnerabilities-common-attacks-and-security-best-practices/#exploiting-the-none-algorithm
 			if t.Method.Alg() != jwt.SigningMethodHS256.Alg() {
 				return nil, jwt.ErrSignatureInvalid

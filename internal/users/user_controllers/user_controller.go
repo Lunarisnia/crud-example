@@ -2,9 +2,9 @@ package usercontrollers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lunarisnia/crud-example/internal/auth"
 	"github.com/lunarisnia/crud-example/internal/middlewares"
 	userdto "github.com/lunarisnia/crud-example/internal/users/user_dto"
 	userservices "github.com/lunarisnia/crud-example/internal/users/user_services"
@@ -18,11 +18,12 @@ func SetupUserController(r *gin.RouterGroup, userService userservices.UserServic
 	c := userControllerImpl{
 		userService: userService,
 	}
-	r.GET("/user", middlewares.VerifyAuth(), c.GetAllUser)
-	r.GET("/user/:id", c.GetUserById)
-	r.POST("/user", c.CreateUser)
-	r.PATCH("/user/:id", c.UpdateName)
-	r.DELETE("/user/:id", c.DeleteUser)
+	r.GET("/users", middlewares.VerifyAuth(), c.GetAllUser)
+	r.POST("/user", middlewares.VerifyAuth(), c.CreateUser)
+
+	r.GET("/user", middlewares.VerifyAuth(), c.GetUserById)
+	r.PATCH("/user", middlewares.VerifyAuth(), c.UpdateName)
+	r.DELETE("/user", middlewares.VerifyAuth(), c.DeleteUser)
 }
 
 func (u *userControllerImpl) GetAllUser(c *gin.Context) {
@@ -62,22 +63,15 @@ func (u *userControllerImpl) CreateUser(c *gin.Context) {
 }
 
 func (u *userControllerImpl) GetUserById(c *gin.Context) {
-	userIdStr := c.Param("id")
-	if userIdStr == "" {
+	userCredential, err := auth.ParseJWTClaim(c)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid ID",
 		})
 		return
 	}
-	userIdInt, err := strconv.Atoi(userIdStr)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Internal Server Error",
-		})
-		return
-	}
 
-	user, err := u.userService.GetUserById(c.Request.Context(), uint(userIdInt))
+	user, err := u.userService.GetUserById(c.Request.Context(), userCredential.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Internal Server Error",
@@ -91,17 +85,10 @@ func (u *userControllerImpl) GetUserById(c *gin.Context) {
 }
 
 func (u *userControllerImpl) UpdateName(c *gin.Context) {
-	userIdStr := c.Param("id")
-	if userIdStr == "" {
+	userCredential, err := auth.ParseJWTClaim(c)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid ID",
-		})
-		return
-	}
-	userIdInt, err := strconv.Atoi(userIdStr)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Internal Server Error",
 		})
 		return
 	}
@@ -114,7 +101,7 @@ func (u *userControllerImpl) UpdateName(c *gin.Context) {
 		return
 	}
 
-	err = u.userService.UpdateName(c.Request.Context(), uint(userIdInt), body.Name)
+	err = u.userService.UpdateName(c.Request.Context(), userCredential.ID, body.Name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Internal Server Error",
@@ -128,22 +115,15 @@ func (u *userControllerImpl) UpdateName(c *gin.Context) {
 }
 
 func (u *userControllerImpl) DeleteUser(c *gin.Context) {
-	userIdStr := c.Param("id")
-	if userIdStr == "" {
+	userCredential, err := auth.ParseJWTClaim(c)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid ID",
 		})
 		return
 	}
-	userIdInt, err := strconv.Atoi(userIdStr)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Internal Server Error",
-		})
-		return
-	}
 
-	err = u.userService.DeleteUser(c.Request.Context(), uint(userIdInt))
+	err = u.userService.DeleteUser(c.Request.Context(), userCredential.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Internal Server Error",

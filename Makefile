@@ -11,9 +11,17 @@ mock:
 test-create:
 	curl -X POST http://localhost:3210/v1/user -d '{"name":"Foobar"}'
 
-.PHONY: test-auth
-test-auth:
-	curl -X GET http://localhost:3210/v1/user -H "Authorization: Bearer $(t)"
+.PHONY: test-all
+test-all:
+	curl -X GET http://localhost:3210/v1/users -H "Authorization: Bearer $(t)"
+
+.PHONY: test-user
+test-user:
+	curl -X GET http://localhost:3210/v1/user -H "Authorization: Bearer $(t)" 
+
+.PHONY: test-update
+test-update:
+	curl -X PATCH http://localhost:3210/v1/user -H "Authorization: Bearer $(t)"  -d '{"name":"$(n)"}'
 
 .PHONY: test-login
 test-login:
