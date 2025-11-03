@@ -55,6 +55,20 @@ func (mr *MockUserServiceMockRecorder) CreateUser(ctx, name any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserService)(nil).CreateUser), ctx, name)
 }
 
+// DeleteUser mocks base method.
+func (m *MockUserService) DeleteUser(ctx context.Context, id uint) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteUser", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUser indicates an expected call of DeleteUser.
+func (mr *MockUserServiceMockRecorder) DeleteUser(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockUserService)(nil).DeleteUser), ctx, id)
+}
+
 // GetAllUser mocks base method.
 func (m *MockUserService) GetAllUser(ctx context.Context) ([]userentities.User, error) {
 	m.ctrl.T.Helper()
@@ -68,4 +82,33 @@ func (m *MockUserService) GetAllUser(ctx context.Context) ([]userentities.User, 
 func (mr *MockUserServiceMockRecorder) GetAllUser(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllUser", reflect.TypeOf((*MockUserService)(nil).GetAllUser), ctx)
+}
+
+// GetUserById mocks base method.
+func (m *MockUserService) GetUserById(ctx context.Context, id uint) (userentities.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserById", ctx, id)
+	ret0, _ := ret[0].(userentities.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserById indicates an expected call of GetUserById.
+func (mr *MockUserServiceMockRecorder) GetUserById(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserById", reflect.TypeOf((*MockUserService)(nil).GetUserById), ctx, id)
+}
+
+// UpdateName mocks base method.
+func (m *MockUserService) UpdateName(ctx context.Context, id uint, newName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateName", ctx, id, newName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateName indicates an expected call of UpdateName.
+func (mr *MockUserServiceMockRecorder) UpdateName(ctx, id, newName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateName", reflect.TypeOf((*MockUserService)(nil).UpdateName), ctx, id, newName)
 }
