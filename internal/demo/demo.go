@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	authcontrollers "github.com/lunarisnia/crud-example/internal/auth/auth_controllers"
+	authservices "github.com/lunarisnia/crud-example/internal/auth/auth_services"
 	"github.com/lunarisnia/crud-example/internal/database"
 	"github.com/lunarisnia/crud-example/internal/middlewares"
 	"github.com/lunarisnia/crud-example/internal/server"
@@ -22,9 +24,11 @@ func Run() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	authservices.FetchToken()
 
 	userRepo := userrepositories.NewUserRepository(db)
 	userService := userservices.NewUserService(userRepo)
+	authService := authservices.NewAuthService(userService)
 
 	s := server.NewRawServer()
 
@@ -32,6 +36,7 @@ func Run() {
 	s.Use(middlewares.RequestLogger())
 	baseGroup := s.Group("/v1")
 	usercontrollers.SetupUserController(baseGroup, userService)
+	authcontrollers.SetupAuthController(baseGroup, authService)
 
 	s.Run("0.0.0.0:3210")
 }

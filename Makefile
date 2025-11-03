@@ -10,3 +10,12 @@ mock:
 .PHONY: test-create
 test-create:
 	curl -X POST http://localhost:3210/v1/user -d '{"name":"Foobar"}'
+
+.PHONY: test-auth
+test-auth:
+	curl -X GET http://localhost:3210/v1/user -H "Authorization: Bearer $(t)"
+
+.PHONY: test-login
+test-login:
+	curl -X POST http://localhost:3210/v1/login -d '{"id":1}'
+

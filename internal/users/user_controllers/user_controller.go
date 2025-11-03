@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lunarisnia/crud-example/internal/middlewares"
 	userdto "github.com/lunarisnia/crud-example/internal/users/user_dto"
 	userservices "github.com/lunarisnia/crud-example/internal/users/user_services"
 )
@@ -17,7 +18,7 @@ func SetupUserController(r *gin.RouterGroup, userService userservices.UserServic
 	c := userControllerImpl{
 		userService: userService,
 	}
-	r.GET("/user", c.GetAllUser)
+	r.GET("/user", middlewares.VerifyAuth(), c.GetAllUser)
 	r.GET("/user/:id", c.GetUserById)
 	r.POST("/user", c.CreateUser)
 	r.PATCH("/user/:id", c.UpdateName)
