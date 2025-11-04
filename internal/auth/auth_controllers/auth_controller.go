@@ -1,7 +1,7 @@
 package authcontrollers
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,9 +29,9 @@ func (a authControllerImpl) Login(c *gin.Context) {
 		})
 		return
 	}
-	fmt.Println("Hello")
-	signed, err := a.authService.Verify(c.Request.Context(), 1)
+	signed, err := a.authService.Verify(c.Request.Context(), userCredential.ID)
 	if err != nil {
+		log.Fatalln(err)
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"message": "Unauthorized",
 		})

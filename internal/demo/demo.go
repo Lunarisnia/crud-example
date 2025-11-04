@@ -11,6 +11,7 @@ import (
 
 	authcontrollers "github.com/lunarisnia/crud-example/internal/auth/auth_controllers"
 	authservices "github.com/lunarisnia/crud-example/internal/auth/auth_services"
+	"github.com/lunarisnia/crud-example/internal/cache"
 	"github.com/lunarisnia/crud-example/internal/database"
 	"github.com/lunarisnia/crud-example/internal/server"
 	usercontrollers "github.com/lunarisnia/crud-example/internal/users/user_controllers"
@@ -31,12 +32,22 @@ func Run() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	redisUrl := os.Getenv("REDIS_URL")
+	if redisUrl == "" {
+		log.Fatalln("REDIS_URL is empty")
+	}
+	rdb, err := cache.ConnectRedis(redisUrl)
+	if err != nil {
+		log.Fatalln("Could not connect to redis: ", err)
+		return
+	}
 	_, err = authservices.FetchToken()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	userRepo := userrepositories.NewUserRepository(db)
+	userRepo := userrepositories.NewUserRepository(db, rdb)
 	userService := userservices.NewUserService(userRepo)
 	authService := authservices.NewAuthService(userService)
 
@@ -69,6 +80,9 @@ func Run() {
 	err = sqlDB.Close()
 	if err != nil {
 		log.Println("Database Shutdown:", err)
+	}
+	if err := rdb.Close(); err != nil {
+		log.Println("Redis Shutdown:", err)
 	}
 	log.Println("Server exiting")
 }

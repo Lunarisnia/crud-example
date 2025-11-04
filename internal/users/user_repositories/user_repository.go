@@ -2,8 +2,11 @@ package userrepositories
 
 import (
 	"context"
+	"fmt"
+	"log"
 
 	userentities "github.com/lunarisnia/crud-example/internal/users/user_entities"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -16,12 +19,14 @@ type UserRepository interface {
 }
 
 type userRepositoryImpl struct {
-	db *gorm.DB
+	db  *gorm.DB
+	rdb *redis.Client
 }
 
-func NewUserRepository(db *gorm.DB) UserRepository {
+func NewUserRepository(db *gorm.DB, rdb *redis.Client) UserRepository {
 	return &userRepositoryImpl{
-		db: db,
+		db:  db,
+		rdb: rdb,
 	}
 }
 
@@ -30,9 +35,10 @@ func (u userRepositoryImpl) Create(ctx context.Context, tx *gorm.DB, name string
 		u.db = tx
 	}
 
-	err := gorm.G[userentities.User](u.db).Create(ctx, &userentities.User{
+	user := userentities.User{
 		Name: name,
-	})
+	}
+	err := gorm.G[userentities.User](u.db).Create(ctx, &user)
 	if err != nil {
 		return err
 	}
@@ -41,7 +47,25 @@ func (u userRepositoryImpl) Create(ctx context.Context, tx *gorm.DB, name string
 }
 
 func (u userRepositoryImpl) ReadById(ctx context.Context, id uint) (userentities.User, error) {
-	user, err := gorm.G[userentities.User](u.db).First(ctx)
+	var user userentities.User
+	err := u.rdb.HGetAll(ctx, fmt.Sprint("user:", id)).Scan(&user)
+	if err != nil {
+		return user, err
+	}
+	// Cache Hit! Return the cached result
+	if user.ID != 0 {
+		log.Println("Cache HIT!:", user.ID)
+		return user, nil
+	}
+
+	user, err = gorm.G[userentities.User](u.db).First(ctx)
+	if err != nil {
+		return user, err
+	}
+
+	// Write to cache on cache miss
+	_, err = u.rdb.HSet(ctx, fmt.Sprint("user:", user.ID), user).Result()
+	log.Println("Populating Cache for user:", user.ID)
 	if err != nil {
 		return user, err
 	}
