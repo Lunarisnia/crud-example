@@ -31,7 +31,10 @@ func Run() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	authservices.FetchToken()
+	_, err = authservices.FetchToken()
+	if err != nil {
+		panic(err)
+	}
 
 	userRepo := userrepositories.NewUserRepository(db)
 	userService := userservices.NewUserService(userRepo)
