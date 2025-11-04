@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	userentities "github.com/lunarisnia/crud-example/internal/users/user_entities"
 	"github.com/redis/go-redis/v9"
@@ -64,8 +65,12 @@ func (u userRepositoryImpl) ReadById(ctx context.Context, id uint) (userentities
 	}
 
 	// Write to cache on cache miss
-	_, err = u.rdb.HSet(ctx, fmt.Sprint("user:", user.ID), user).Result()
 	log.Println("Populating Cache for user:", user.ID)
+	_, err = u.rdb.HSet(ctx, fmt.Sprint("user:", user.ID), user).Result()
+	if err != nil {
+		return user, err
+	}
+	_, err = u.rdb.Expire(ctx, fmt.Sprint("user:", user.ID), 30*time.Second).Result()
 	if err != nil {
 		return user, err
 	}
