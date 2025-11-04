@@ -33,7 +33,7 @@ func Run() {
 	}
 	_, err = authservices.FetchToken()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	userRepo := userrepositories.NewUserRepository(db)
