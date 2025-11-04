@@ -15,8 +15,9 @@ type JWTClaim struct {
 
 func ParseJWTClaim(c *gin.Context) (JWTClaim, error) {
 	var jwtClaim JWTClaim
+	var ok bool
 	if token, exist := c.Get("TokenClaim"); exist {
-		jwtClaim, ok := token.(JWTClaim)
+		jwtClaim, ok = token.(JWTClaim)
 		if !ok {
 			return jwtClaim, errors.New("cast to jwt claim failed.")
 		}
